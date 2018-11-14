@@ -17,9 +17,9 @@ RUN /bin/miniconda/bin/conda install -c bioconda skesa
 
 RUN git clone https://github.com/nickp60/plentyofbugs
 RUN git clone https://github.com/widdowquinn/pyani
-#RUN /bin/miniconda/bin/conda install -c bioconda pyani
-#RUN /bin/miniconda/bin/conda remove -c bioconda pyani
 RUN cd pyani && git checkout development && python setup.py develop
 # test
 RUN pyani --help
+WORKDIR plentyofbugs
+ENV  PATH="$PATH:/bin/miniconda/bin"
 RUN ./plentyofbugs -h
