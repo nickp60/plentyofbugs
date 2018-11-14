@@ -1,5 +1,19 @@
 # plentyofbugs
-Find your sequenced isolate an compatable reference genome based on location, interests, and anverage nucleotide identity
+Find your sequenced isolate a compatable reference genome based on location, interests, and anverage nucleotide identity
+
+# Installation
+## dependencies
+plentyofbugs requires
+- the `development` branch of pyani
+- skesa
+- mummer
+- seqtk
+
+# Running
+
+
+
+# Notes
 
 ##  WORK IN PROGRESS
 

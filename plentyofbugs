@@ -51,16 +51,22 @@ RREADS=""
 GENOMESDIR="./genomes_for_run_ANI/"
 USAGE="USAGE:run_ani.sh  -e experiment_name -o 'Organism name' -n 5 -f path/to/reads_f.fastq -d output_dir"
 
-# make sure we have enough args (10, because we have 5 flagged required  arguments)
+#  print help and exit 0 if needed
+if [ -z "$1" ] || [ "$1" == "-h" ]
+then
+    echo $USAGE
+    exit 0
+fi
 
-if [ "$#" -lt 10 ]
+# make sure we have enough args (10, because we have 5 flagged required  arguments)
+if [ "$#" -lt 10  ]
 then
     echo "Not enough arguments"
     echo $USAGE
     exit 1
 fi
 
-while getopts "e:o:n:f:r:p:g:a:s:d:" opt; do
+while getopts "e:o:n:f:r:p:g:a:s:d:h:" opt; do
     case $opt in
 	d)
 	    OUTDIR=$OPTARG
@@ -118,6 +124,10 @@ while getopts "e:o:n:f:r:p:g:a:s:d:" opt; do
 	\?)
 	    echo "Invalid option: -$OPTARG" >&2
 	    echo $USAGE
+	    ;;
+	h)
+	    echo $USAGE
+	    exit 0
 	    ;;
 	:)
 	    echo "Option -$OPTARG requires an argument." >&2
