@@ -81,10 +81,14 @@ fi
 
 if [ $(command -v shuf) ]
 then
-    echo "using shuf" >&2
     SHUF=shuf
 else
-    echo "using gshuf" >&2
+    if [ ! $(command -v gshuf) ]
+    then
+	echo "neither gshuf and shuf could be found! please install one" >&2
+	exit 1
+    fi
+
     SHUF=gshuf
 fi
 
@@ -98,14 +102,14 @@ then
 	# sed "s/chro.*://" | \
 	sed "s/^chro[^:]*://" | \
 	# sed "s/\/.*//"
-        sed "s/[;\/].*//"	
+        sed "s/[;\/].*//"
 else
         $SHUF /tmp/prok_subset_raw_outfile | \
 	cut -f 9 | \
 	# sed "s/chro.*://" | \
 	sed "s/^chro[^:]*://" | \
 	# sed "s/\/.*//"  # handle instances lacking both genbank and refseq accs
-        sed "s/[;\/].*//"	
+        sed "s/[;\/].*//"
 fi
 
-echo "done" >&2
+echo "done selecting genomes accessions" >&2

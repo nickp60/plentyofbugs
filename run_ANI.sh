@@ -3,15 +3,17 @@ set -e
 #  Takes 5 mandatory args -
 # -e experiement name
 # -f Forward Reads
-# -r Reverse Reads
 # -n number of strains
 # -o organism name
+# -d output directory
 
 # And 3 optional
 # -p prokaryotes.txt file
 # -g directory of genomes of interest
 # -a existing assembly; skip the miniasembly
-# hacky way to get the path tho the scripts dir
+
+
+# check for rrequired programs
 for prog in skesa pyani nucmer
 do
     if hash $prog 2>/dev/null; then
@@ -22,6 +24,22 @@ do
     fi
 done
 
+
+#  Check to make sure w ehave a shuffler installed
+if [ $(command -v shuf) ]
+then
+    echo "using shuf"
+else
+    if [ $(command -v gshuf) ]
+    then
+	echo "using gshuf"
+    else
+	echo "neither gshuf and shuf could be found! if on OSX, brew install coreutils"
+	exit 1
+    fi
+fi
+
+# hacky way to get the path tho the scripts dir
 SCRIPTPATH="$( cd "$(dirname "$0")" ; pwd -P )"
 
 
@@ -31,19 +49,23 @@ ASSEMBLY=""
 ASSEMBLER="skesa"
 RREADS=""
 GENOMESDIR="./genomes_for_run_ANI/"
-USAGE="USAGE:run_ani.sh  -e experiment_name -o 'Organism name' -n 5 -f path/to/reads_f.fastq -r path/to/reads_r.fastq"
+USAGE="USAGE:run_ani.sh  -e experiment_name -o 'Organism name' -n 5 -f path/to/reads_f.fastq -d output_dir"
 
-# make sure we have enough args (10, because we have 5 flagged arguments)
+# make sure we have enough args (10, because we have 5 flagged required  arguments)
 
-if [ "$#" -lt 8 ]
+if [ "$#" -lt 10 ]
 then
     echo "Not enough arguments"
     echo $USAGE
     exit 1
 fi
 
-while getopts "e:o:n:f:r:p:g:a:s:" opt; do
+while getopts "e:o:n:f:r:p:g:a:s:d:" opt; do
     case $opt in
+	d)
+	    OUTDIR=$OPTARG
+	    echo "Output directory: $OPTARG" >&2
+	    ;;
 	e)
 	    NAME=$OPTARG
 	    echo "Experiment name: $OPTARG" >&2
@@ -103,12 +125,20 @@ while getopts "e:o:n:f:r:p:g:a:s:" opt; do
 
   esac
 done
-OUTDIRBASE="./"
-OUTDIR="${OUTDIRBASE}`date +%F`_ANI_${NAME}/"
+#OUTDIRBASE="./"
+#OUTDIR="${OUTDIRBASE}`date +%F`_ANI_${NAME}/"
+if [ -z "$OUTDIR" ]
+then
+    echo "Output directory already exists!"
+    exit 1
+else
+    mkdir ${OUTDIR}
+fi
+
+
 MINIDIR=${OUTDIR}/mini_assembly/
 LOGFILE="${OUTDIR}/log.txt"
 PYANILOGFILE="${OUTDIR}/pyanilog.txt"
-mkdir ${OUTDIR}
 mkdir ${MINIDIR}
 
 #############################   Run Mini Assembly  #########################
@@ -145,7 +175,7 @@ then
     mkdir ${MINIDIR}/assembly/
     case "$ASSEMBLER" in
 	skesa)
-	    skesa --fastq $SKESA_STRING --contigs_out ${MINIDIR}/assembly/contigs.fasta
+	    skesa --fastq $SKESA_STRING --contigs_out ${MINIDIR}/assembly/contigs.fasta 2> ${MINIDIR}/assembly/log.txt
 	    ;;
 	spades)
 	    spades.py $SPADES_STRING -o ${MINIDIR}/assembly/ -t 4 -m 64
@@ -169,9 +199,13 @@ then
     then
         PROKFILE="./prokaryotes.txt"  # default, so we dont pass empty args below
     fi
-    echo "${SCRIPTPATH}/select_ref_by_ANI/get_n_random_complete_genomes.sh -o \"$ORGNAME\" -n $NSTRAINS -f $PROKFILE > ${OUTDIR}/accessions "
-    ${SCRIPTPATH}/select_ref_by_ANI/get_n_random_complete_genomes.sh -o "$ORGNAME" -n $NSTRAINS -f $PROKFILE > ${OUTDIR}/accessions
-
+    echo "${SCRIPTPATH}/get_n_random_complete_genomes.sh -o \"$ORGNAME\" -n $NSTRAINS -f $PROKFILE > ${OUTDIR}/accessions "
+    ${SCRIPTPATH}/get_n_random_complete_genomes.sh -o "$ORGNAME" -n $NSTRAINS -f $PROKFILE > ${OUTDIR}/accessions
+    if [ ! -s "${OUTDIR}/accessions" ]
+    then
+	echo "error getting complete genomes!"
+	exit 1
+    fi
 
     #######################   Download close genomes  ###########################
     echo "Downloading genomes"  >> "${LOGFILE}"
@@ -250,9 +284,10 @@ rm $GENOMESDIR/contigs_${NAME}.md5
 # rm $GENOMESDIR/classes.txt
 # extract best hit
 echo "extract best hit"  >> "${LOGFILE}"
-echo "python ${SCRIPTPATH}/select_ref_by_ANI/parse_closest_ANI.py $OUTDIR/pyani/matrix_identity_${this_run}.tab > ${OUTDIR}/best_reference"  >&2
-python ${SCRIPTPATH}/select_ref_by_ANI/parse_closest_ANI.py $OUTDIR/pyani/matrix_identity_${this_run}.tab > ${OUTDIR}/best_reference
+echo "python ${SCRIPTPATH}/parse_closest_ANI.py $OUTDIR/pyani/matrix_identity_${this_run}.tab > ${OUTDIR}/best_reference"  >&2
+python ${SCRIPTPATH}/parse_closest_ANI.py $OUTDIR/pyani/matrix_identity_${this_run}.tab > ${OUTDIR}/best_reference
 
 bestref=$(cat ${OUTDIR}/best_reference)
 # this should be the only line going to stdout
+#  #pipergonnapipe
 echo -e "${NAME}\t${bestref}"
