@@ -1,4 +1,6 @@
 # plentyofbugs
+![plentyofbugslogo](https://github.com/nickp60/plentyofbugs/blob/master/icon/pob.png)
+
 Find your sequenced isolate a compatable reference genome based on location, interests, and anverage nucleotide identity
 
 # Installation
