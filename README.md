@@ -11,7 +11,16 @@ plentyofbugs requires
 
 # Running
 
+Run this with docker. you will pull out less hair in the long run
 
+```
+docker run -v  ~/GitHub/riboSeed/riboSeed/integration_data/:/input/ -v ${PWD}:/output/ -t nickp60/plentyofbugs ./plentyofbugs -f /input/test_reads1.fq -o "Escherichia coli" -n 5 -e test -d /output/tmptmptmp/
+```
+which is
+
+```
+docker run -v  <input directory>:/input/ -v <where to put your output folder>:/output/ -t nickp60/plentyofbugs ./plentyofbugs -f /input/<name of F reads file> -o "<bug of interest>" -n <max number of strains to compare with>  -e <name of experiment> -d /output/<name for output folder>/
+```
 
 # Notes
 
