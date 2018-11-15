@@ -48,7 +48,7 @@ NSTRAINS=""
 ASSEMBLY=""
 ASSEMBLER="skesa"
 RREADS=""
-GENOMESDIR="./genomes_for_run_ANI/"
+GENOMESDIR=""
 USAGE="USAGE:run_ani.sh  -e experiment_name -o 'Organism name' -n 5 -f path/to/reads_f.fastq -d output_dir"
 
 #  print help and exit 0 if needed
@@ -180,8 +180,8 @@ then
 	SPADES_STRING="-s ${OUTDIR}/downsampled_reads/reads1.fq"
         SKESA_STRING="${OUTDIR}/downsampled_reads/reads1.fq"
     fi
-    echo "running mini assembly"  >> "${LOGFILE}"
-    echo "$SPADES_string"
+    echo "running mini assembly"   >&2
+    echo "$SPADES_string $SKESA_STRING"
     mkdir ${MINIDIR}/assembly/
     case "$ASSEMBLER" in
 	skesa)
@@ -195,10 +195,16 @@ then
     ASSEMBLY=${MINIDIR}/assembly/contigs.fasta
 fi
 
-if [ ! -d "$GENOMESDIR" ]
+if [ -z "$GENOMESDIR" ]
 then
-    #GENOMESDIR="${OUTDIR}/genomes_for_run_ANI"
+    GENOMESDIR="${OUTDIR}/genomes_for_run_ANI"
     mkdir $GENOMESDIR
+
+elif [ ! -d $GENOMESDIR ]
+then
+     mkdir $GENOMESDIR
+else
+    echo "Using existing genomes dir $GENOMESDIR"
 fi
 
 if  [ -z "$(ls -A $GENOMESDIR)" ]
@@ -262,16 +268,16 @@ if [ -d .pyani ]
 then
     echo "pyani db already exists" >> $PYANILOGFILE
 else
-    echo "pyani createdb"  >&2
+    echo "pyani createdb --dbpath ${GENOMESDIR}/.pyani/pyanidb"  >&2
     pyani createdb --dbpath ${GENOMESDIR}/.pyani/pyanidb  >> "${LOGFILE}" 2>&1
 fi
 
 echo "Running pyani anim"   >> "${LOGFILE}"
 echo "pyani anim $GENOMESDIR $OUTDIR/pyani --workers 64  --dbpath ${GENOMESDIR}/.pyani/pyanidb -v -l $PYANILOGFILE --labels $GENOMESDIR/labels.txt --classes $GENOMESDIR/classes.txt"  >&2
-pyani anim $GENOMESDIR $OUTDIR/pyani --workers 64  -v -l $PYANILOGFILE --labels $GENOMESDIR/labels.txt --classes $GENOMESDIR/classes.txt >> "${LOGFILE}" 2>&1
+pyani anim $GENOMESDIR $OUTDIR/pyani --workers 64  -v -l $PYANILOGFILE --labels $GENOMESDIR/labels.txt --classes $GENOMESDIR/classes.txt --dbpath ${GENOMESDIR}/.pyani/pyanidb >> "${LOGFILE}" 2>&1
 
 echo "Generating report of pyani runs"   >> "${LOGFILE}"
-echo "pyani report -v -l $PYANILOGFILE --runs $OUTDIR/pyani "  >&2
+echo "pyani report -v -l $PYANILOGFILE --runs $OUTDIR/pyani --dbpath ${GENOMESDIR}/.pyani/pyanidb"  >&2
 pyani report -v -l $PYANILOGFILE --runs $OUTDIR/pyani --dbpath ${GENOMESDIR}/.pyani/pyanidb  >> "${LOGFILE}" 2>&1
 
 
@@ -279,7 +285,7 @@ echo "Getting name of most recent pyani run"   >> "${LOGFILE}"
 this_run=$(tail -n 1 $OUTDIR/pyani/runs.tab | cut -f 1)
 
 echo "Generating genome comparison matrix"   >> "${LOGFILE}"
-echo "pyani report -v -l $PYANILOGFILE --run_matrices $this_run $OUTDIR/pyani "  >&2
+echo "pyani report -v -l $PYANILOGFILE --run_matrices $this_run $OUTDIR/pyani --dbpath ${GENOMESDIR}/.pyani/pyanidb"  >&2
 pyani report -v -l $PYANILOGFILE --run_matrices $this_run $OUTDIR/pyani  --dbpath ${GENOMESDIR}/.pyani/pyanidb >> "${LOGFILE}" 2>&1
 
 

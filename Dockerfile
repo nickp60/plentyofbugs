@@ -21,7 +21,7 @@ RUN bash miniconda3.sh -b -p /bin/miniconda/
 RUN /bin/miniconda/bin/conda install -c bioconda skesa
 
 # get plentyofbugs and pyani
-RUN git clone https://github.com/nickp60/plentyofbugs
+RUN git clone https://github.com/Nickp60/plentyofbugs
 RUN git clone https://github.com/widdowquinn/pyani
 
 # develop, not install, because of setup.py packages declaration
@@ -31,7 +31,9 @@ RUN pip install pyutilsnrw
 # test
 RUN pyani --help
 WORKDIR plentyofbugs
+RUN wget ftp://ftp.ncbi.nlm.nih.gov/genomes/GENOME_REPORTS/prokaryotes.txt
 ENV PATH="$PATH:/bin/miniconda/bin"
 # running test, which should download prokaryotes.txt file into container
-RUN ./plentyofbugs -f ./test_data/test_reads1.fq -o "Escherichia coli" -n 5 -d ./tmp/ -e tmpname
+ADD ./plentyofbugs ./plentyofbugs
+RUN ./plentyofbugs -f ./test_data/test_reads1.fq -o "Escherichia coli" -n 3 -d ./tmp/ -e tmpname
 RUN rm -rf tmp
