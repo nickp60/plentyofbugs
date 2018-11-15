@@ -43,7 +43,7 @@ fi
 SCRIPTPATH="$( cd "$(dirname "$0")" ; pwd -P )"
 
 
-PROKFILE=""
+PROKFILE="./prokaryotes.txt"
 NSTRAINS=""
 ASSEMBLY=""
 ASSEMBLER="skesa"
@@ -205,7 +205,7 @@ if  [ -z "$(ls -A $GENOMESDIR)" ]
 then
     ###################   Get potenetial close genomes  #########################
     echo "Get potenetial close genomes"  >> "${LOGFILE}"
-    if [ ! -s "$PROKFILE" ]
+    if [ ! -f "$PROKFILE" ]
     then
         PROKFILE="./prokaryotes.txt"  # default, so we dont pass empty args below
     fi
@@ -263,16 +263,16 @@ then
     echo "pyani db already exists" >> $PYANILOGFILE
 else
     echo "pyani createdb"  >&2
-    pyani createdb >> "${LOGFILE}" 2>&1
+    pyani createdb --dbpath ${GENOMESDIR}/.pyani/pyanidb  >> "${LOGFILE}" 2>&1
 fi
 
 echo "Running pyani anim"   >> "${LOGFILE}"
-echo "pyani anim $GENOMESDIR $OUTDIR/pyani --workers 64  -v -l $PYANILOGFILE --labels $GENOMESDIR/labels.txt --classes $GENOMESDIR/classes.txt"  >&2
+echo "pyani anim $GENOMESDIR $OUTDIR/pyani --workers 64  --dbpath ${GENOMESDIR}/.pyani/pyanidb -v -l $PYANILOGFILE --labels $GENOMESDIR/labels.txt --classes $GENOMESDIR/classes.txt"  >&2
 pyani anim $GENOMESDIR $OUTDIR/pyani --workers 64  -v -l $PYANILOGFILE --labels $GENOMESDIR/labels.txt --classes $GENOMESDIR/classes.txt >> "${LOGFILE}" 2>&1
 
 echo "Generating report of pyani runs"   >> "${LOGFILE}"
 echo "pyani report -v -l $PYANILOGFILE --runs $OUTDIR/pyani "  >&2
-pyani report -v -l $PYANILOGFILE --runs $OUTDIR/pyani  >> "${LOGFILE}" 2>&1
+pyani report -v -l $PYANILOGFILE --runs $OUTDIR/pyani --dbpath ${GENOMESDIR}/.pyani/pyanidb  >> "${LOGFILE}" 2>&1
 
 
 echo "Getting name of most recent pyani run"   >> "${LOGFILE}"
@@ -280,7 +280,7 @@ this_run=$(tail -n 1 $OUTDIR/pyani/runs.tab | cut -f 1)
 
 echo "Generating genome comparison matrix"   >> "${LOGFILE}"
 echo "pyani report -v -l $PYANILOGFILE --run_matrices $this_run $OUTDIR/pyani "  >&2
-pyani report -v -l $PYANILOGFILE --run_matrices $this_run $OUTDIR/pyani >> "${LOGFILE}" 2>&1
+pyani report -v -l $PYANILOGFILE --run_matrices $this_run $OUTDIR/pyani  --dbpath ${GENOMESDIR}/.pyani/pyanidb >> "${LOGFILE}" 2>&1
 
 
 # average_nucleotide_identity.py -v -i $GENOMESDIR -g -o $OUTDIR/pyani  &>> "${LOGFILE}"
