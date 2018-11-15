@@ -32,4 +32,6 @@ RUN pip install pyutilsnrw
 RUN pyani --help
 WORKDIR plentyofbugs
 ENV PATH="$PATH:/bin/miniconda/bin"
-RUN ./plentyofbugs -h
+# running test, which should download prokaryotes.txt file into container
+RUN ./plentyofbugs -f ./test_data/test_reads1.fq -o "Escherichia coli" -n 5 -d ./tmp/
+RUN rm -rf tmp

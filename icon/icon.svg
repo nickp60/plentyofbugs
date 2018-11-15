@@ -10,9 +10,9 @@
    xmlns:xlink="http://www.w3.org/1999/xlink"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   width="210mm"
-   height="297mm"
-   viewBox="0 0 210 297"
+   width="167.82143mm"
+   height="167.82143mm"
+   viewBox="0 0 167.82143 167.82143"
    version="1.1"
    id="svg8"
    inkscape:version="0.92.2 5c3e80d, 2017-08-06"
@@ -20,7 +20,6 @@
   <defs
      id="defs2">
     <filter
-       color-interpolation-filters="sRGB"
        inkscape:menu-tooltip="Invert colors"
        inkscape:menu="Color"
        height="1"
@@ -28,7 +27,8 @@
        y="0"
        x="0"
        inkscape:label="Invert"
-       id="filter3854">
+       id="filter3854"
+       style="color-interpolation-filters:sRGB">
       <feColorMatrix
          result="fbSourceGraphic"
          values="1"
@@ -40,7 +40,6 @@
          id="feColorMatrix3858" />
     </filter>
     <filter
-       color-interpolation-filters="sRGB"
        inkscape:menu-tooltip="Invert colors"
        inkscape:menu="Color"
        height="1"
@@ -48,7 +47,8 @@
        y="0"
        x="0"
        inkscape:label="Invert"
-       id="filter3860">
+       id="filter3860"
+       style="color-interpolation-filters:sRGB">
       <feColorMatrix
          result="fbSourceGraphic"
          values="1"
@@ -60,7 +60,6 @@
          id="feColorMatrix3864" />
     </filter>
     <filter
-       color-interpolation-filters="sRGB"
        inkscape:menu-tooltip="Invert colors"
        inkscape:menu="Color"
        height="1"
@@ -68,7 +67,8 @@
        y="0"
        x="0"
        inkscape:label="Invert"
-       id="filter3866">
+       id="filter3866"
+       style="color-interpolation-filters:sRGB">
       <feColorMatrix
          result="fbSourceGraphic"
          values="1"
@@ -151,11 +151,11 @@
      pagecolor="#b4c9bb"
      bordercolor="#666666"
      borderopacity="1.0"
-     inkscape:pageopacity="1"
+     inkscape:pageopacity="0"
      inkscape:pageshadow="2"
      inkscape:zoom="0.49497475"
-     inkscape:cx="-185.57922"
-     inkscape:cy="706.01157"
+     inkscape:cx="-251.46682"
+     inkscape:cy="320.93107"
      inkscape:document-units="mm"
      inkscape:current-layer="layer1"
      showgrid="false"
@@ -163,7 +163,11 @@
      inkscape:window-height="855"
      inkscape:window-x="10"
      inkscape:window-y="0"
-     inkscape:window-maximized="0" />
+     inkscape:window-maximized="0"
+     fit-margin-top="0"
+     fit-margin-left="0"
+     fit-margin-right="0"
+     fit-margin-bottom="0" />
   <metadata
      id="metadata5">
     <rdf:RDF>
@@ -180,17 +184,18 @@
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
      id="layer1"
-     style="display:inline">
+     style="display:inline"
+     transform="translate(-17.432762,-27.29269)">
     <rect
        id="rect3699"
        width="167.82143"
        height="167.82143"
-       x="-18.915894"
-       y="28.896307"
+       x="17.432762"
+       y="27.29269"
        style="fill:#5ac7d4;fill-opacity:1;stroke:none;stroke-width:0.26458332"
        rx="25.4"
-       inkscape:export-xdpi="96"
-       inkscape:export-ydpi="96" />
+       inkscape:export-xdpi="71.900002"
+       inkscape:export-ydpi="71.900002" />
     <path
        sodipodi:nodetypes="cssc"
        inkscape:connector-curvature="0"
@@ -208,10 +213,11 @@
      inkscape:groupmode="layer"
      id="layer2"
      inkscape:label="icon"
-     style="display:inline">
+     style="display:inline"
+     transform="translate(-17.432762,-27.29269)">
     <g
        id="g5618"
-       transform="matrix(0.91369752,0,0,0.93309342,0.44970032,40.826134)">
+       transform="matrix(0.91369752,0,0,0.93309342,36.798356,39.222517)">
       <rect
          transform="rotate(-34.302485)"
          rx="28.200001"
