@@ -181,7 +181,7 @@ then
         SKESA_STRING="${OUTDIR}/downsampled_reads/reads1.fq"
     fi
     echo "running mini assembly"   >&2
-    echo "$SPADES_string $SKESA_STRING"
+    echo "$SPADES_string $SKESA_STRING" >&2
     mkdir ${MINIDIR}/assembly/
     case "$ASSEMBLER" in
 	skesa)

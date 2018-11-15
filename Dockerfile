@@ -34,6 +34,5 @@ WORKDIR plentyofbugs
 RUN wget ftp://ftp.ncbi.nlm.nih.gov/genomes/GENOME_REPORTS/prokaryotes.txt
 ENV PATH="$PATH:/bin/miniconda/bin"
 # running test, which should download prokaryotes.txt file into container
-ADD ./plentyofbugs ./plentyofbugs
 RUN ./plentyofbugs -f ./test_data/test_reads1.fq -o "Escherichia coli" -n 3 -d ./tmp/ -e tmpname
 RUN rm -rf tmp
