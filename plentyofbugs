@@ -1,6 +1,6 @@
 #!/bin/bash
 set -e
-POB_VERISON=0.80
+POB_VERISON=0.82
 #  Takes 5 mandatory args -
 # -e experiement name
 # -f Forward Reads
