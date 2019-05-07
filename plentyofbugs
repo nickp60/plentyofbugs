@@ -1,6 +1,6 @@
 #!/bin/bash
 set -e
-POB_VERISON=0.82
+POB_VERISON=0.83
 #  Takes 5 mandatory args -
 # -e experiement name
 # -f Forward Reads
@@ -43,7 +43,7 @@ fi
 # hacky way to get the path tho the scripts dir
 SCRIPTPATH="$( cd "$(dirname "$0")" ; pwd -P )"
 
-
+OUTDIR=./plentyofbugs_results/
 PROKFILE="./prokaryotes.txt"
 NSTRAINS=""
 ASSEMBLY=""
@@ -157,9 +157,9 @@ while getopts "e:o:n:f:r:p:g:a:c:x:s:d:h:" opt; do
 done
 #OUTDIRBASE="./"
 #OUTDIR="${OUTDIRBASE}`date +%F`_ANI_${NAME}/"
-if [ -z "$OUTDIR" ]
+if [ -d "$OUTDIR" ]
 then
-    echo "Output directory already exists!"
+    echo "Output directory $OUTDIR  already exists!"
     exit 1
 else
     mkdir ${OUTDIR}
