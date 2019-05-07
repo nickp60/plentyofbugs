@@ -1,5 +1,6 @@
 #!/bin/bash
 set -e
+POB_VERISON=0.80
 #  Takes 5 mandatory args -
 # -e experiement name
 # -f Forward Reads
@@ -12,7 +13,7 @@ set -e
 # -g directory of genomes of interest
 # -a existing assembly; skip the miniasembly
 
-
+echo "PlentyOfBugs version: $POB_VERSION"
 # check for rrequired programs
 for prog in skesa pyani nucmer
 do
@@ -50,6 +51,7 @@ ASSEMBLER="skesa"
 RREADS=""
 GENOMESDIR=""
 CORES=4
+DOWNSAMPLE_AMMOUNT=.99999
 USAGE="USAGE: plentyofbugs  -e experiment_name -o 'Organism name' -n 5 -f path/to/reads_f.fastq -d output_dir"
 
 #  print help and exit 0 if needed
@@ -67,7 +69,7 @@ then
     exit 1
 fi
 
-while getopts "e:o:n:f:r:p:g:a:c:s:d:h:" opt; do
+while getopts "e:o:n:f:r:p:g:a:c:x:s:d:h:" opt; do
     case $opt in
 	d)
 	    OUTDIR=$OPTARG
@@ -105,13 +107,21 @@ while getopts "e:o:n:f:r:p:g:a:c:s:d:h:" opt; do
 	    ASSEMBLY=$OPTARG
 	    echo "assembly: $ASSEMBLY" >&2
 	    ;;
-	c)
+ 	c)
 	    CORES=$OPTARG
 	    re='^[0-9]+$'
 	    if ! [[ $CORES =~ $re ]] ; then
 		echo "error: cores must be given a number" >&2; exit 1
 	    fi
 	    echo "number of cores: $CORES" >&2
+	    ;;
+ 	x)
+	    DOWNSAMPLE_AMMOUNT=$OPTARG
+	    re='^[0-9]+([.][0-9]+)?$'
+	    if ! [[ $DOWNSAMPLE_AMMOUNT =~ $re ]] ; then
+		echo "error: downsampling ammount must be a float between 0.1 and .9999, or a number of reads" >&2; exit 1
+	    fi
+	    echo " DOWNSAMPLE_AMMOUNT: $DOWNSAMPLE_AMMOUNT" >&2
 	    ;;
 	s)
 	    ASSEMBLER=$OPTARG
@@ -168,22 +178,12 @@ then
 
     mkdir ${OUTDIR}/downsampled_reads/
 
-    {
-	echo "seqtk sample -s100 $FREADS 100000 > ${OUTDIR}/downsampled_reads/reads1.fq" >&2
-	seqtk sample -s100 $FREADS 100000 > ${OUTDIR}/downsampled_reads/reads1.fq
-    } || {
-	echo "seqtk sample -s100 $FREADS .1    > ${OUTDIR}/downsampled_reads/reads1.fq" >&2
-	seqtk sample -s100 $FREADS .1    > ${OUTDIR}/downsampled_reads/reads1.fq
-    }
+    echo "seqtk sample -s100 $FREADS  $DOWNSAMPLE_AMMOUNT > ${OUTDIR}/downsampled_reads/reads1.fq" >&2
+    seqtk sample -s100 $FREADS  $DOWNSAMPLE_AMMOUNT > ${OUTDIR}/downsampled_reads/reads1.fq
     if [ ! -s $RREADS ]
     then
-	{
-	    echo "seqtk sample -s100 $RREADS 100000   > ${OUTDIR}/downsampled_reads/reads1.fq" >&2
-	    seqtk sample -s100 $RREADS 100000 > ${OUTDIR}/downsampled_reads/reads2.fq
-	} || {
-	    echo "seqtk sample -s100 $RREADS .1   > ${OUTDIR}/downsampled_reads/reads1.fq" >&2
-	    seqtk sample -s100 $RREADS .1    > ${OUTDIR}/downsampled_reads/reads2.fq
-	}
+	echo "seqtk sample -s100 $RREADS DOWNSAMPLE_$AMMOUNT   > ${OUTDIR}/downsampled_reads/reads1.fq" >&2
+	seqtk sample -s100 $RREADS $DOWNSAMPLE_AMMONT > ${OUTDIR}/downsampled_reads/reads2.fq
 	SPADES_STRING="-1 ${OUTDIR}/downsampled_reads/reads1.fq -2 ${OUTDIR}/downsampled_reads/reads2.fq"
         SKESA_STRING="${OUTDIR}/downsampled_reads/reads1.fq ${OUTDIR}/downsampled_reads/reads2.fq"
     else
