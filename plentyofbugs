@@ -49,7 +49,8 @@ ASSEMBLY=""
 ASSEMBLER="skesa"
 RREADS=""
 GENOMESDIR=""
-USAGE="USAGE:run_ani.sh  -e experiment_name -o 'Organism name' -n 5 -f path/to/reads_f.fastq -d output_dir"
+CORES=4
+USAGE="USAGE: plentyofbugs  -e experiment_name -o 'Organism name' -n 5 -f path/to/reads_f.fastq -d output_dir"
 
 #  print help and exit 0 if needed
 if [ -z "$1" ] || [ "$1" == "-h" ]
@@ -66,7 +67,7 @@ then
     exit 1
 fi
 
-while getopts "e:o:n:f:r:p:g:a:s:d:h:" opt; do
+while getopts "e:o:n:f:r:p:g:a:c:s:d:h:" opt; do
     case $opt in
 	d)
 	    OUTDIR=$OPTARG
@@ -104,6 +105,14 @@ while getopts "e:o:n:f:r:p:g:a:s:d:h:" opt; do
 	    ASSEMBLY=$OPTARG
 	    echo "assembly: $ASSEMBLY" >&2
 	    ;;
+	c)
+	    CORES=$OPTARG
+	    re='^[0-9]+$'
+	    if ! [[ $CORES =~ $re ]] ; then
+		echo "error: cores must be given a number" >&2; exit 1
+	    fi
+	    echo "number of cores: $CORES" >&2
+	    ;;
 	s)
 	    ASSEMBLER=$OPTARG
 	    case "$ASSEMBLER" in
@@ -124,6 +133,7 @@ while getopts "e:o:n:f:r:p:g:a:s:d:h:" opt; do
 	\?)
 	    echo "Invalid option: -$OPTARG" >&2
 	    echo $USAGE
+	    exit 1
 	    ;;
 	h)
 	    echo $USAGE
@@ -185,14 +195,22 @@ then
     mkdir ${MINIDIR}/assembly/
     case "$ASSEMBLER" in
 	skesa)
-	    skesa --fastq $SKESA_STRING --contigs_out ${MINIDIR}/assembly/contigs.fasta 2> ${MINIDIR}/assembly/log.txt
+	    echo "skesa --fastq $SKESA_STRING --cores $CORES --contigs_out ${MINIDIR}/assembly/contigs.fasta"
+	    skesa --fastq $SKESA_STRING --cores $CORES --contigs_out ${MINIDIR}/assembly/contigs.fasta 2> ${MINIDIR}/assembly/log.txt
 	    ;;
 	spades)
-	    spades.py $SPADES_STRING -o ${MINIDIR}/assembly/ -t 4 -m 64
+	    echo "spades.py $SPADES_STRING -o ${MINIDIR}/assembly/ -t $CORES -m 64"
+	    spades.py $SPADES_STRING -o ${MINIDIR}/assembly/ -t $CORES -m 64
 	    ;;
     esac
 
     ASSEMBLY=${MINIDIR}/assembly/contigs.fasta
+    if [ ! -f $ASSEMBLY ]
+    then
+	echo "error running assembly command!"
+	exit 1
+    fi
+
 fi
 
 if [ -z "$GENOMESDIR" ]
@@ -255,7 +273,7 @@ then
     rm $GENOMESDIR/classes.txt
 fi
 echo "pyani index $GENOMESDIR -v -l $PYANILOGFILE"  >&2
-pyani index $GENOMESDIR -v -l $PYANILOGFILE >> "${LOGFILE}" 2>&1
+pyani index $GENOMESDIR -v -l $PYANILOGFILE
 echo "recreating pyani labels"   >> "${LOGFILE}"
 # then fix the columns; we dont care about the name
 paste <(cut -f 1,2 $GENOMESDIR/classes.txt) <(cut -f 2 $GENOMESDIR/classes.txt) > tmp_classes
@@ -273,8 +291,8 @@ else
 fi
 
 echo "Running pyani anim"   >> "${LOGFILE}"
-echo "pyani anim $GENOMESDIR $OUTDIR/pyani --workers 64  --dbpath ${GENOMESDIR}/.pyani/pyanidb -v -l $PYANILOGFILE --labels $GENOMESDIR/labels.txt --classes $GENOMESDIR/classes.txt"  >&2
-pyani anim $GENOMESDIR $OUTDIR/pyani --workers 64  -v -l $PYANILOGFILE --labels $GENOMESDIR/labels.txt --classes $GENOMESDIR/classes.txt --dbpath ${GENOMESDIR}/.pyani/pyanidb >> "${LOGFILE}" 2>&1
+echo "pyani anim $GENOMESDIR $OUTDIR/pyani --workers $CORES  --dbpath ${GENOMESDIR}/.pyani/pyanidb -v -l $PYANILOGFILE --labels $GENOMESDIR/labels.txt --classes $GENOMESDIR/classes.txt"  >&2
+pyani anim $GENOMESDIR $OUTDIR/pyani --workers $CORES  -v -l $PYANILOGFILE --labels $GENOMESDIR/labels.txt --classes $GENOMESDIR/classes.txt --dbpath ${GENOMESDIR}/.pyani/pyanidb >> "${LOGFILE}" 2>&1
 
 echo "Generating report of pyani runs"   >> "${LOGFILE}"
 echo "pyani report -v -l $PYANILOGFILE --runs $OUTDIR/pyani --dbpath ${GENOMESDIR}/.pyani/pyanidb"  >&2
