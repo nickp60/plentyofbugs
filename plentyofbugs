@@ -1,6 +1,6 @@
 #!/bin/bash
 set -e
-POB_VERISON=0.83
+POB_VERSION=0.85
 #  Takes 5 mandatory args -
 # -e experiement name
 # -f Forward Reads
@@ -282,7 +282,7 @@ paste <(cut -f 1,2 $GENOMESDIR/labels.txt) <(cut -f 2 $GENOMESDIR/labels.txt) > 
 mv tmp_labels $GENOMESDIR/labels.txt
 
 
-if [ -d .pyani ]
+if [ -f "${GENOMESDIR}/.pyani/pyanidb" ]
 then
     echo "pyani db already exists" >> $PYANILOGFILE
 else

@@ -26,7 +26,7 @@ RUN pip install pyutilsnrw
 RUN git clone https://github.com/widdowquinn/pyani
 # develop, not install, because of setup.py packages declaration
 RUN cd pyani && git checkout development && python setup.py develop
-RUN git clone https://github.com/Nickp60/plentyofbugs #.82
+RUN git clone https://github.com/Nickp60/plentyofbugs #.83
 # test
 #RUN pyani --help
 #RUN ./plentyofbugs -f ./test_data/test_reads1.fq -o "Escherichia coli" -n 3 -d ./tmp/ -e tmpname
