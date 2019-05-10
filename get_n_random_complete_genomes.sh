@@ -94,7 +94,7 @@ fi
 
 echo "selecting $NSTRAINS random strains" >&2
 
-if [ $NSTRAINS != "" ]
+if [ "$NSTRAINS" != "" ]
 then
     $SHUF /tmp/prok_subset_raw_outfile | \
 	head -n $NSTRAINS | \

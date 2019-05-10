@@ -1,6 +1,6 @@
 #!/bin/bash
 set -e
-POB_VERSION=0.85
+POB_VERSION=0.87
 #  Takes 5 mandatory args -
 # -e experiement name
 # -f Forward Reads
@@ -13,14 +13,14 @@ POB_VERSION=0.85
 # -g directory of genomes of interest
 # -a existing assembly; skip the miniasembly
 
-echo "PlentyOfBugs version: $POB_VERSION"
+echo "PlentyOfBugs version: $POB_VERSION" >&2
 # check for rrequired programs
 for prog in skesa pyani nucmer
 do
     if hash $prog 2>/dev/null; then
-        echo "$prog installed"
+        echo "$prog installed" >&2
     else
-        echo "$prog not installed! exiting"
+        echo "$prog not installed! exiting" >&2
 	exit 1
     fi
 done
@@ -64,8 +64,8 @@ fi
 # make sure we have enough args (10, because we have 5 flagged required  arguments)
 if [ "$#" -lt 10  ]
 then
-    echo "Not enough arguments"
-    echo $USAGE
+    echo "Not enough arguments" >&2
+    echo $USAGE >&2
     exit 1
 fi
 
@@ -86,6 +86,7 @@ while getopts "e:o:n:f:r:p:g:a:c:x:s:d:h:" opt; do
 	n)
 	    NSTRAINS=$OPTARG
 	    echo "number of strains: $NSTRAINS" >&2
+
 	    ;;
 	f)
 	    FREADS=$OPTARG
@@ -134,7 +135,7 @@ while getopts "e:o:n:f:r:p:g:a:c:x:s:d:h:" opt; do
 		    # Do stuff
 		    ;;
 		*)
-		    echo "Error: assembler must be either spades or skesa"
+		    echo "Error: assembler must be either spades or skesa" >&2
 		    exit 1
 		    ;;
 	    esac
@@ -159,7 +160,7 @@ done
 #OUTDIR="${OUTDIRBASE}`date +%F`_ANI_${NAME}/"
 if [ -d "$OUTDIR" ]
 then
-    echo "Output directory $OUTDIR  already exists!"
+    echo "Output directory $OUTDIR  already exists!" >&2
     exit 1
 else
     mkdir ${OUTDIR}
@@ -195,11 +196,11 @@ then
     mkdir ${MINIDIR}/assembly/
     case "$ASSEMBLER" in
 	skesa)
-	    echo "skesa --fastq $SKESA_STRING --cores $CORES --contigs_out ${MINIDIR}/assembly/contigs.fasta"
+	    echo "skesa --fastq $SKESA_STRING --cores $CORES --contigs_out ${MINIDIR}/assembly/contigs.fasta" >&2
 	    skesa --fastq $SKESA_STRING --cores $CORES --contigs_out ${MINIDIR}/assembly/contigs.fasta 2> ${MINIDIR}/assembly/log.txt
 	    ;;
 	spades)
-	    echo "spades.py $SPADES_STRING -o ${MINIDIR}/assembly/ -t $CORES -m 64"
+	    echo "spades.py $SPADES_STRING -o ${MINIDIR}/assembly/ -t $CORES -m 64" >&2
 	    spades.py $SPADES_STRING -o ${MINIDIR}/assembly/ -t $CORES -m 64
 	    ;;
     esac
@@ -207,7 +208,7 @@ then
     ASSEMBLY=${MINIDIR}/assembly/contigs.fasta
     if [ ! -f $ASSEMBLY ]
     then
-	echo "error running assembly command!"
+	echo "error running assembly command!" >&2
 	exit 1
     fi
 
@@ -222,7 +223,7 @@ elif [ ! -d $GENOMESDIR ]
 then
      mkdir $GENOMESDIR
 else
-    echo "Using existing genomes dir $GENOMESDIR"
+    echo "Using existing genomes dir $GENOMESDIR" >&2
 fi
 
 if  [ -z "$(ls -A $GENOMESDIR)" ]
@@ -233,20 +234,32 @@ then
     then
         PROKFILE="./prokaryotes.txt"  # default, so we dont pass empty args below
     fi
-    echo "${SCRIPTPATH}/get_n_random_complete_genomes.sh -o \"$ORGNAME\" -n $NSTRAINS -f $PROKFILE > ${OUTDIR}/accessions "
-    ${SCRIPTPATH}/get_n_random_complete_genomes.sh -o "$ORGNAME" -n $NSTRAINS -f $PROKFILE > ${OUTDIR}/accessions
+    if [ $NSTRAINS -eq "0" ]
+    then
+	# get all the genomes
+       echo "${SCRIPTPATH}/get_n_random_complete_genomes.sh -o \"$ORGNAME\" -f $PROKFILE > ${OUTDIR}/accessions " >&2
+       ${SCRIPTPATH}/get_n_random_complete_genomes.sh -o "$ORGNAME" -f $PROKFILE > ${OUTDIR}/accessions
+    else
+       echo "${SCRIPTPATH}/get_n_random_complete_genomes.sh -o \"$ORGNAME\" -n $NSTRAINS -f $PROKFILE > ${OUTDIR}/accessions " >&2
+       ${SCRIPTPATH}/get_n_random_complete_genomes.sh -o "$ORGNAME" -n $NSTRAINS -f $PROKFILE > ${OUTDIR}/accessions
+    fi
+
+
     if [ ! -s "${OUTDIR}/accessions" ]
     then
-	echo "error getting complete genomes!"
+	echo "error getting complete genomes!" >&2
 	exit 1
     fi
 
     #######################   Download close genomes  ###########################
     echo "Downloading genomes"  >> "${LOGFILE}"
-
+    accession_n=$(wc -l < $OUTDIR/accessions)
+    accession_counter=1
     while read accession
     do
+	echo "downloading $accession $accession_counter of $accession_n"
 	get_genomes.py -q $accession -o $GENOMESDIR   >> "${LOGFILE}"2>&1
+	accession_counter=$((accession_counter+1))
     done < $OUTDIR/accessions
 else
     echo "using existing genomes directory"   >> "${LOGFILE}"
@@ -314,9 +327,7 @@ pyani report -v -l $PYANILOGFILE --run_matrices $this_run $OUTDIR/pyani  --dbpat
 # rm $GENOMESDIR/contigs.fasta
 rm $GENOMESDIR/contigs_${NAME}.fasta
 rm $GENOMESDIR/contigs_${NAME}.md5
-# rm $GENOMESDIR/labels.txt
-# rm $GENOMESDIR/classes.txt
-# extract best hit
+
 echo "extract best hit"  >> "${LOGFILE}"
 echo "python ${SCRIPTPATH}/parse_closest_ANI.py $OUTDIR/pyani/matrix_identity_${this_run}.tab > ${OUTDIR}/best_reference"  >&2
 python ${SCRIPTPATH}/parse_closest_ANI.py $OUTDIR/pyani/matrix_identity_${this_run}.tab > ${OUTDIR}/best_reference
