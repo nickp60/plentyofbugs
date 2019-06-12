@@ -15,7 +15,7 @@ POB_VERSION=0.87
 
 echo "PlentyOfBugs version: $POB_VERSION" >&2
 # check for rrequired programs
-for prog in skesa pyani nucmer
+for prog in skesa mash
 do
     if hash $prog 2>/dev/null; then
         echo "$prog installed" >&2

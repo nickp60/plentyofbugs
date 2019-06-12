@@ -5,7 +5,7 @@ RUN apt-get update && apt-get install -y \
 			       ncbi-blast+ \
 			       mummer \
 			       seqtk -y
-# why, you ask, are we woth installing stuff with and without pip
+# why, you ask, are we both installing stuff with and without pip
 # conda pyani fails to build becasue of c extensions with numpy, so pip
 # but building skesa from source fails mysteriously
 # so we install just skesa with conda, and use pip for everything else
@@ -18,19 +18,16 @@ RUN bash miniconda3.sh -b -p /bin/miniconda/
 # RUN git clone https://github.com/ncbi/SKESA && cd SKESA && make -f Makefile.nongs
 
 # install skesa
-RUN /bin/miniconda/bin/conda install -c bioconda skesa
+RUN /bin/miniconda/bin/conda install -c bioconda skesa mash
 #  for that get_genomes.py script
-RUN pip install pyutilsnrw
+# RUN pip install pyutilsnrw
 
-## get plentyofbugs and pyani
-RUN git clone https://github.com/widdowquinn/pyani
-# develop, not install, because of setup.py packages declaration
-RUN cd pyani && git checkout development && python setup.py develop
-#RUN git clone https://github.com/Nickp60/plentyofbugs #.85
+## get plentyofbugs
+# RUN cd pyani && git checkout development && python setup.py develop
+# RUN git clone https://github.com/Nickp60/plentyofbugs #.89
 ADD ./ /plentyofbugs/
 # test
-#RUN pyani --help
-#RUN ./plentyofbugs -f ./test_data/test_reads1.fq -o "Escherichia coli" -n 3 -d ./tmp/ -e tmpname
+RUN ./plentyofbugs -f ./test_data/test_reads1.fq -o "Escherichia coli" -n 3 -d ./tmp/ -e tmpname
 # RUN rm -rf tmp
 
 WORKDIR plentyofbugs
