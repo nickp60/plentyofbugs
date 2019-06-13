@@ -74,8 +74,8 @@ def main(args):
     # # to
     # # NZ_CP013218.1
     # # Note that we only get the first chromasome for a given entry. Sorry vibrioists
-    for line in org_lines:
-        print(line[8].split(":")[1].split(";")[0].split("/")[0])
+    #for line in org_lines:
+    #    print(line[8].split(":")[1].split(";")[0].split("/")[0])
 
     for line in org_lines[0:args.nstrains]:
         shortname = line[8].split(":")[1].split(";")[0].split("/")[0]
