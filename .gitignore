@@ -1,3 +1,6 @@
 *~
 *.DS_Store
 .pyani/
+*__pycache__
+*.egg-info/
+prokaryotes.txt

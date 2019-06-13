@@ -47,6 +47,13 @@ def get_args(test_args=None):  # pragma: no cover
         default="skesa",
         help="assembler to use", required=False)
     parser.add_argument(
+        "-m", "--distance_method", action="store",
+        choices=["pyani", "mash"],
+        default="mash",
+        dest="method",
+        help="method to calculate genomic distances; use pyani " +
+        "for accuracy, and mash for speed", required=False)
+    parser.add_argument(
         "-p",
         "--prokaryotes",
         action="store",
@@ -84,6 +91,9 @@ def get_args(test_args=None):  # pragma: no cover
         raise ValueError(args.downsampling_ammount, "invalid value")
     if args.downsampling_ammount > 1 and args.downsampling_ammount < 10:
         raise ValueError(args.downsampling_ammount, "invalid value")
+    if args.method == "pyani":
+        print("Error: please run PlentyOfBugs via a docker version < 0.88 to use pyani")
+        sys.exit(1)
     return args
 
 def  main():
@@ -140,90 +150,51 @@ def  main():
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
                 check=True)
+
+    #######################   Download close genomes  ###########################
     if not os.path.exists(args.genomes_dir):
         os.path.makedirs(args.genomes_dir)
-
     if len(os.listdir(args.genomes_dir)) is None:
         get_n_genomes.main(args)
 
+    if args.method == "pyani":
+        pyani_cmds = []
+        labels_txt = os.path.join(args.genomes_dir, "labels.txt")
+        classes_txt = os.path.join(args.genomes_dir, "classes.txt")
+        for path in ["labels.txt", "classes.txt"]:
+            if os.path.exists( path)):
+                os.remove(os.path.join(args.genomes_dir, path))
+        pyani_index = "pyani index {args.genomes_dir} -v"
+        pyani_cmds.append(pyani_index)
+        # then fix the columns; we dont care about the name
+        fix_labels_cmds = [
+            "paste <(cut -f 1,2 $GENOMESDIR/classes.txt) <(cut -f 2 $GENOMESDIR/classes.txt) > tmp_classes",
+            "mv tmp_classes $GENOMESDIR/classes.txt"
+            "paste <(cut -f 1,2 $GENOMESDIR/labels.txt) <(cut -f 2 $GENOMESDIR/labels.txt) > tmp_labels",
+            "mv tmp_labels $GENOMESDIR/labels.txt"
+        ]
+        pyani_cmds.extend(fix_labels_cmds)
+        pyanidb = os.path.join(args.genomes_dir, "pyani", "pyanidb")
+        if not os.path.exists(pyanidb):
+            pyani_cmds.append("pyani createdb --dbpath ${GENOMESDIR}/.pyani/pyanidb")
+        pyani_cmds.append(str(
+            "pyani anim {args.genomes_dir} {args.outdir}pyani --workers {args.threads}  --dbpath {pyanidb} -v --labels {labels_txt} --classes {classes_txt}").format(**locals())
+                          )
+        pyani_cmds.append("tail -n 1 $OUTDIR/pyani/runs.tab | cut -f 1")
+        pyani_cmds.append(str(
+            "pyani report -v --runs {args.outdir}pyani  --dbpath {pyanidb}").format(**locals()))
 
-#     #######################   Download close genomes  ###########################
-#     echo "Downloading genomes"  >> "${LOGFILE}"
-#     accession_n=$(wc -l < $OUTDIR/accessions)
-#     accession_counter=1
-#     while read accession
-#     do
-# 	echo "downloading $accession $accession_counter of $accession_n"
-# 	get_genomes.py -q $accession -o $GENOMESDIR   >> "${LOGFILE}"2>&1
-# 	accession_counter=$((accession_counter+1))
-#     done < $OUTDIR/accessions
-# else
-#     echo "using existing genomes directory"   >> "${LOGFILE}"
-#     # delete any existing "conigs.fasta" file from the dir, as those would be from old runs.
-#     # probaly shoudl make this a try/catch thingy
-#     # {
-#     # 	rm "${GENOMESDIR}/contigs_*.*"
-#     # } || {
-#     # 	echo "no need to clean genomes dir" &>> "${LOGFILE}"
-#     # }
-# fi
-
-# echo "copy the mini_assembly result to the potential genomes dir"  >> "${LOGFILE}"
-# cp $ASSEMBLY $GENOMESDIR/contigs_${NAME}.fasta
-
-# ##########################   Run ANI analysis  ###############################
-# echo "Running pyani index"   >> "${LOGFILE}"
-# if [ -f "$GENOMESDIR/labels.txt" ]
-# then
-#     rm $GENOMESDIR/labels.txt
-# fi
-# if [ -f "$GENOMESDIR/classes.txt" ]
-# then
-#     rm $GENOMESDIR/classes.txt
-# fi
-# echo "pyani index $GENOMESDIR -v -l $PYANILOGFILE"  >&2
-# pyani index $GENOMESDIR -v -l $PYANILOGFILE
-# echo "recreating pyani labels"   >> "${LOGFILE}"
-# # then fix the columns; we dont care about the name
-# paste <(cut -f 1,2 $GENOMESDIR/classes.txt) <(cut -f 2 $GENOMESDIR/classes.txt) > tmp_classes
-# mv tmp_classes $GENOMESDIR/classes.txt
-# paste <(cut -f 1,2 $GENOMESDIR/labels.txt) <(cut -f 2 $GENOMESDIR/labels.txt) > tmp_labels
-# mv tmp_labels $GENOMESDIR/labels.txt
-
-
-# if [ -f "${GENOMESDIR}/.pyani/pyanidb" ]
-# then
-#     echo "pyani db already exists" >> $PYANILOGFILE
-# else
-#     echo "pyani createdb --dbpath ${GENOMESDIR}/.pyani/pyanidb"  >&2
-#     pyani createdb --dbpath ${GENOMESDIR}/.pyani/pyanidb  >> "${LOGFILE}" 2>&1
-# fi
-
-# echo "Running pyani anim"   >> "${LOGFILE}"
-# echo "pyani anim $GENOMESDIR $OUTDIR/pyani --workers $CORES  --dbpath ${GENOMESDIR}/.pyani/pyanidb -v -l $PYANILOGFILE --labels $GENOMESDIR/labels.txt --classes $GENOMESDIR/classes.txt"  >&2
-# pyani anim $GENOMESDIR $OUTDIR/pyani --workers $CORES  -v -l $PYANILOGFILE --labels $GENOMESDIR/labels.txt --classes $GENOMESDIR/classes.txt --dbpath ${GENOMESDIR}/.pyani/pyanidb >> "${LOGFILE}" 2>&1
-
-# echo "Generating report of pyani runs"   >> "${LOGFILE}"
-# echo "pyani report -v -l $PYANILOGFILE --runs $OUTDIR/pyani --dbpath ${GENOMESDIR}/.pyani/pyanidb"  >&2
-# pyani report -v -l $PYANILOGFILE --runs $OUTDIR/pyani --dbpath ${GENOMESDIR}/.pyani/pyanidb  >> "${LOGFILE}" 2>&1
-
-
-# echo "Getting name of most recent pyani run"   >> "${LOGFILE}"
-# this_run=$(tail -n 1 $OUTDIR/pyani/runs.tab | cut -f 1)
-
-# echo "Generating genome comparison matrix"   >> "${LOGFILE}"
-# echo "pyani report -v -l $PYANILOGFILE --run_matrices $this_run $OUTDIR/pyani --dbpath ${GENOMESDIR}/.pyani/pyanidb"  >&2
-# pyani report -v -l $PYANILOGFILE --run_matrices $this_run $OUTDIR/pyani  --dbpath ${GENOMESDIR}/.pyani/pyanidb >> "${LOGFILE}" 2>&1
-
-
-# # average_nucleotide_identity.py -v -i $GENOMESDIR -g -o $OUTDIR/pyani  &>> "${LOGFILE}"
-
-
-# ############# remove contigs from genomes dir if we plan on reusing   ########
-# # rm $GENOMESDIR/contigs.fasta
-# rm $GENOMESDIR/contigs_${NAME}.fasta
-# rm $GENOMESDIR/contigs_${NAME}.md5
-
+        for cmd in pyani_cmds:
+            print(cmd)
+            subprocess.run(cmd,
+                shell=sys.platform!="win32",
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                check=True)
+        ############# remove contigs from genomes dir if we plan on reusing   ########
+        # get rid of the fasta and md5
+        for path in glob.glob(os.path.join(args.genomes_dir, "contigs_")):
+            os.remove(path)
 # echo "extract best hit"  >> "${LOGFILE}"
 # echo "python ${SCRIPTPATH}/parse_closest_ANI.py $OUTDIR/pyani/matrix_identity_${this_run}.tab > ${OUTDIR}/best_reference"  >&2
 # python ${SCRIPTPATH}/parse_closest_ANI.py $OUTDIR/pyani/matrix_identity_${this_run}.tab > ${OUTDIR}/best_reference
