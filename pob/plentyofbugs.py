@@ -150,8 +150,9 @@ def get_best_mash_result(mash_results):
     max_org.sort(reverse=False)
     return([max_org[0][1], max_org[0][0]])
 
-def  main():
-    # check for rrequired programs
+def main():
+    print("PlentyOfBugs version" + _version.__version__)
+    # check for required programs
     args = get_args()
     for prog in [args.assembler, "mash", "wget"]:
         if shutil.which(prog) is None:
@@ -175,7 +176,7 @@ def  main():
         cmds.append(ds_cmd_1)
         if args.readsR is not None:
             ds_readsR = os.path.join(args.output,"downsampled_reads", "reads2.fq")
-            ds_cmd_1 = str(
+            ds_cmd_2 = str(
                 "seqtk sample -s100 {args.readsR}  {args.downsampling_ammount} " +
                 "> {ds_readsR}").format(**locals())
             cmds.append(ds_cmd_2)
@@ -278,5 +279,4 @@ def  main():
 
 
 if __name__ == "__main__":
-    print("PlentyOfBugs version" + _version.__version__)
     main()

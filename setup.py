@@ -10,10 +10,10 @@ from codecs import open
 from os import path
 import sys
 
-try: # for pip >= 10
-    from pip._internal.req import parse_requirements
-except ImportError: # for pip <= 9.0.3
-    from pip.req import parse_requirements
+# try: # for pip >= 10
+#     from pip._internal.req import parse_requirements
+# except ImportError: # for pip <= 9.0.3
+#     from pip.req import parse_requirements
 
 here = path.abspath(path.dirname(__file__))
 
@@ -33,29 +33,29 @@ if sys.version_info <= (3, 0):
     sys.exit(1)
 
 ## parse requirements file
-install_reqs = parse_requirements("requirements.txt",
-                                  session=False)
-requirements = [str(ir.req) for ir in install_reqs]
+# install_reqs = parse_requirements("requirements.txt",
+#                                   session=False)
+# requirements = [str(ir.req) for ir in install_reqs]
 
 setup(
     name='PlentyofBugs',
     version=verstr,
 
-    description='ezclermont: phylotype your E. coli strains, in silico',
+    description='find your newly sequenced isolate the perfect companion reference genome',
     # long_description=long_description,
     long_description="""
     check out the GitHub
     repo for the real README.md file
     """,
 
-    url='https://github.com/nickp60/EzClermont',
+    url='https://github.com/nickp60/plentyofbugs',
 
     # Author details
     author='Nick Waters',
     author_email='nickp60@gmail.com',
     license='MIT',
     # handle requirments
-    install_requires=requirements,
+    install_requires=[],
     # See https://pypi.python.org/pypi?%3Aaction=list_classifiers
     classifiers=[
         'Development Status :: 3 - Alpha',
@@ -75,7 +75,7 @@ setup(
     entry_points={
        'console_scripts': [
            'plentyofbugs=pob.plentyofbugs:main',
-           'get_n_genomes=pob.plentyofbugs:main',
+           'get_n_genomes=pob.get_n_genomes:main',
        ],
     },
 )
