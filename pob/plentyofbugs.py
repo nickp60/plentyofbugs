@@ -59,7 +59,8 @@ def get_args(test_args=None):  # pragma: no cover
     parser.add_argument(
         "-g",
         "--genomes_dir",
-        help="path to output dir",
+        help="path to genomes dir. Creates " +
+        "it if it  doesnt exist",
         required=False)
     parser.add_argument(
         "-a",
@@ -83,6 +84,8 @@ def get_args(test_args=None):  # pragma: no cover
         args = parser.parse_args(sys.argv[1:])
     else:
         args = parser.parse_args(test_args)
+    if args.genomes_dir is None:
+        args.genomes_dir = "plentyofbugs_genomes"
     if not os.path.isdir(args.genomes_dir):
         os.makedirs(args.genomes_dir)
     if args.downsampling_ammount < .1:

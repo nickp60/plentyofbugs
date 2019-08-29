@@ -23,11 +23,14 @@ RUN /bin/miniconda/bin/conda install -c bioconda skesa mash
 # RUN pip install pyutilsnrw
 
 ## get plentyofbugs
-# RUN cd pyani && git checkout development && python setup.py develop
-# RUN git clone https://github.com/Nickp60/plentyofbugs #.89
-ADD ./ /plentyofbugs/
+#####  Production
+RUN pip install plentyofbugs # 0.92
+
+#####  Dev
+#ADD . /plentyofbugs/
+#RUN cd /plentyofbugs/ &&	python setup.py install
 # test
-RUN ./plentyofbugs -f ./test_data/test_reads1.fq -o "Escherichia coli" -n 3 -d ./tmp/ -e tmpname
+RUN plentyofbugs -f ./test_data/test_reads1.fq --genus_species "Escherichia coli" -n 3 -o ./tmp/ -h
 # RUN rm -rf tmp
 
 WORKDIR plentyofbugs
