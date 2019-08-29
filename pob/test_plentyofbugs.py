@@ -25,13 +25,14 @@ proks_file = "test_proks.txt"
 def test_download_proks():
     if not os.path.exists(proks_file):
         gng.fetch_prokaryotes(dest=proks_file)
+    assert os.path.exists(proks_file),  "error downloading prrokaryotes.txt"
 
 def test_get_lines():
     org = "Escherichia coli"
     lines = gng.get_lines_of_interest_from_proks(path=proks_file,
                                                       org=org)
     print(lines)
-    assert [] !=  lines,  "empty proks file!"
+    assert "PRJNA315511" in  [x[2] for x in lines],  "PRJNA315511 not found!!"
 
 def test_get_names():
     org = "Escherichia coli"
@@ -43,4 +44,4 @@ def test_get_names():
         print(name)
         names.append(name)
 
-    assert [] ==  lines,  "empty proks file!"
+    assert "CP017061.1" in names,  "CP017061.1 not found!!"
