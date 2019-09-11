@@ -13,9 +13,7 @@ from random import shuffle
 
 def get_args():  # pragma nocover
     parser = argparse.ArgumentParser(
-        description="Blast assembly against core genome to find and " +
-        "eliminate truncated genes due to bad assembly, " +
-        "returning a assembly  with genes that meet a set of criteria. ",
+        description="Download a number of complete genomes for a given organism ",
         add_help=True)
     parser.add_argument(
         "-o",
@@ -103,7 +101,7 @@ def main(args):
     org_lines = get_lines_of_interest_from_proks(path=args.prokaryotes,
                                                  org=args.organism_name)
 
-    cmds <- make_fetch_cmds(
+    cmds = make_fetch_cmds(
         org_lines,
         nstrains=args.nstrains,
         genomes_dir=args.genomes_dir,

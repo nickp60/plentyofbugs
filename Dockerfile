@@ -3,7 +3,7 @@ MAINTAINER Nick Waters <nickp60@gmail.com>
 
 RUN apt-get update && apt-get install -y \
 			       ncbi-blast+ \
-			       mummer \
+			       #mummer \
 			       seqtk -y
 # why, you ask, are we both installing stuff with and without pip
 # conda pyani fails to build becasue of c extensions with numpy, so pip
@@ -24,16 +24,16 @@ RUN /bin/miniconda/bin/conda install -c bioconda skesa mash
 
 ## get plentyofbugs
 #####  Production
-RUN pip install plentyofbugs # 0.92
+RUN pip install plentyofbugs==0.93 # 0.92
 
 #####  Dev
 #ADD . /plentyofbugs/
 #RUN cd /plentyofbugs/ &&	python setup.py install
 # test
-RUN plentyofbugs -f ./test_data/test_reads1.fq --genus_species "Escherichia coli" -n 3 -o ./tmp/ -h
+#RUN plentyofbugs -f ./test_data/test_reads1.fq --genus_species "Escherichia coli" -n 3 -o ./tmp/ -h
 # RUN rm -rf tmp
-
-WORKDIR plentyofbugs
+#run which plentyofbugs
+#WORKDIR plentyofbugs
 #RUN wget ftp://ftp.ncbi.nlm.nih.gov/genomes/GENOME_REPORTS/prokaryotes.txt
 ENV PATH="$PATH:/bin/miniconda/bin"
-ENTRYPOINT [ "/plentyofbugs/plentyofbugs" ]
+ENTRYPOINT [ "/usr/local/bin/plentyofbugs" ]

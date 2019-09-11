@@ -153,10 +153,12 @@ def get_best_mash_result(mash_results):
     max_org.sort(reverse=False)
     return([max_org[0][1], max_org[0][0]])
 
+
 def main():
-    print("PlentyOfBugs version" + _version.__version__)
+    print("PlentyOfBugs version " + _version.__version__)
     # check for required programs
     args = get_args()
+    args.output = os.path.join(args.output, "")
     for prog in [args.assembler, "mash", "wget"]:
         if shutil.which(prog) is None:
             print(prog + "not found in PATH! exiting...")
@@ -166,6 +168,9 @@ def main():
         sys.exit(1)
     else:
         os.makedirs(args.output)
+    #######################   Download close genomes  ###########################
+    if len(os.listdir(args.genomes_dir))  == 0:
+        get_n_genomes.main(args)
     #############################   Run Mini Assembly  #########################
     if args.assembly is None:
         # downsample
@@ -210,9 +215,7 @@ def main():
                 stderr=subprocess.PIPE,
                 check=True)
 
-    #######################   Download close genomes  ###########################
-    if len(os.listdir(args.genomes_dir))  == 0:
-        get_n_genomes.main(args)
+    #######################   Find closest  ###########################
 
     if args.method == "pyani":
         pyani_cmds = []
