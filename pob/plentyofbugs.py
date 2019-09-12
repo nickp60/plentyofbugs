@@ -77,7 +77,7 @@ def get_args(test_args=None):  # pragma: no cover
         required=False)
     parser.add_argument(
         "--downsampling_ammount",
-        help="downsampling ammount must be a float between 0.1 and .9999, or a number of reads",
+        help="For assembly; downsampling amount must be a float between 0.1 and .9999, or a number of reads",
         type=float,
         default=.9999,
         required=False)
@@ -171,7 +171,10 @@ def main():
     else:
         os.makedirs(args.output)
     #######################   Download close genomes  #########################
-    if len(glob.glob(args.genomes_dir + "*.fna"))  == 0:
+    if len(glob.glob(args.genomes_dir + "*.f*a"))  == 0:
+        if args.organism_name is None:
+            print("No fasta (*.f*a) file in genomes directory; must provide --genus_species")
+            sys.exit(1)
         get_n_genomes.main(args)
     #############################   Run Mini Assembly  ########################
     if args.assembly is None:

@@ -36,7 +36,7 @@ def get_args():  # pragma nocover
         "--prokaryotes",
         action="store",
         help="path_to_prokaryotes.txt",
-        required=True)
+        default="prokaryotes.txt")
     return(parser.parse_args())
 
 
@@ -86,6 +86,9 @@ def get_lines_of_interest_from_proks(path,  org):
     # find the lines matching out query
     # and save a list with the results
     org_lines = []
+    # this should be caught elsewhere (as an arg if run this a script, or in
+    # checking before calling main from plentyofbugs
+    assert org is not None, "organism name must be provided"
     with open(path, "r") as proks:
         for line in proks:
             splitline = line.strip().split("\t")
@@ -101,7 +104,13 @@ def get_lines_of_interest_from_proks(path,  org):
     return org_lines
 
 
-def main(args):
+def main(args=None):
+    if args is None:
+        args = get_args()
+    try:
+        os.makedirs(args.genomes_dir)
+    except:
+        sys.stderr.write("using exisiting genomes directory...\n")
     if not os.path.exists(args.prokaryotes):
         fetch_prokaryotes(dest=args.prokaryotes)
     org_lines = get_lines_of_interest_from_proks(path=args.prokaryotes,
@@ -120,7 +129,7 @@ def main(args):
             shell=sys.platform != "win32",
             check=True)
 
-    unzip_cmd = "gunzip " + os.path.join(args.genomes_dir, "*")
+    unzip_cmd = "gunzip " + os.path.join(args.genomes_dir, "*.gz")
     sys.stderr.write(unzip_cmd + "\n")
     subprocess.run(
         unzip_cmd,
@@ -128,11 +137,11 @@ def main(args):
         check=True)
 
 
-if __name__ ==  "__main__":
-    args = get_args()
-    try:
-        os.makedirs(args.genomes_dir)
-    except:
-        sys.stderr.write("genomes output directory already exists!\n")
-        sys.exit(1)
-    main(args)
+# if __name__ ==  "__main__":
+#     args = get_args()
+#     try:
+#         os.makedirs(args.genomes_dir)
+#     except:
+#         sys.stderr.write("genomes output directory already exists!\n")
+#         sys.exit(1)
+#     main(args)
