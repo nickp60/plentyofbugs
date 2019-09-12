@@ -51,6 +51,7 @@ def parse_name_from_proks_line(line):
     seq_name = line[8].split(":")[1].split(";")[0].split("/")[0]
     return seq_name
 
+
 def make_fetch_cmds(org_lines, nstrains, genomes_dir, SHUFFLE=True):
     if SHUFFLE:
         shuffle(org_lines)
@@ -60,9 +61,10 @@ def make_fetch_cmds(org_lines, nstrains, genomes_dir, SHUFFLE=True):
     # # NZ_CP013218.1
     # # Note that we only get the first chromasome for a given entry. Sorry vibrioists
     #for line in org_lines:
-    #    print(line[8].split(":")[1].split(";")[0].split("/")[0])
+    #    sys.stderr.write(line[8].split(":")[1].split(";")[0].split("/")[0])
     cmds = []
     for line in org_lines[0:nstrains]:
+        # print(line)
         shortname = parse_name_from_proks_line(line)
         name = os.path.basename(line[20])
         full_path = os.path.join(
@@ -70,7 +72,10 @@ def make_fetch_cmds(org_lines, nstrains, genomes_dir, SHUFFLE=True):
             name + "_genomic.fna.gz")
         cmd = "wget " + full_path + " -O " + os.path.join(
             genomes_dir, shortname + ".fna.gz")
-        cmds.append(cmd)
+        # no idea why some of the ftp paths are empty/ "-".
+        # Take a look at  CP043199.1 CP043211 for examples
+        if name != "-":
+            cmds.append(cmd)
     return cmds
 
 
@@ -88,37 +93,39 @@ def get_lines_of_interest_from_proks(path,  org):
                 if splitline[0].startswith(org):
                     org_lines.append(splitline)
     # for line in org_lines:
-    #    print(line[20])
+    #    sys.stderr.write(line[20])
     # # if file is empty, raise an error
     if len(org_lines) == 0:
-        print("no " + org +
-              " matches in the prokaryotes.txt file")
+        sys.stderr.write("no " + org +
+              " matches in the prokaryotes.txt file\n")
     return org_lines
+
 
 def main(args):
     if not os.path.exists(args.prokaryotes):
         fetch_prokaryotes(dest=args.prokaryotes)
     org_lines = get_lines_of_interest_from_proks(path=args.prokaryotes,
                                                  org=args.organism_name)
-
+    if args.nstrains == 0:
+        args.nstrains = len(org_lines)
     cmds = make_fetch_cmds(
         org_lines,
         nstrains=args.nstrains,
         genomes_dir=args.genomes_dir,
         SHUFFLE=True)
-    for cmd in cmds:
-        print(cmd)
+    for i, cmd in enumerate(cmds):
+        sys.stderr.write("Downloading genome %i of %i\n%s\n" %(i + 1, len(cmds), cmd))
         subprocess.run(
             cmd,
             shell=sys.platform != "win32",
             check=True)
 
     unzip_cmd = "gunzip " + os.path.join(args.genomes_dir, "*")
-    print(unzip_cmd)
+    sys.stderr.write(unzip_cmd + "\n")
     subprocess.run(
         unzip_cmd,
         shell=sys.platform != "win32",
-    check=True)
+        check=True)
 
 
 if __name__ ==  "__main__":
@@ -126,6 +133,6 @@ if __name__ ==  "__main__":
     try:
         os.makedirs(args.genomes_dir)
     except:
-        print("genomes output directory already  exists!")
+        sys.stderr.write("genomes output directory already exists!\n")
         sys.exit(1)
     main(args)

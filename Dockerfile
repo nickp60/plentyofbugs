@@ -24,7 +24,7 @@ RUN /bin/miniconda/bin/conda install -c bioconda skesa mash
 
 ## get plentyofbugs
 #####  Production
-RUN pip install plentyofbugs==0.93 # 0.92
+RUN pip install plentyofbugs==0.97
 
 #####  Dev
 #ADD . /plentyofbugs/

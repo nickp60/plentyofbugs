@@ -8,6 +8,7 @@ import argparse
 import sys
 import time
 import os
+import glob
 import traceback
 import shutil
 import subprocess
@@ -33,7 +34,7 @@ def get_args(test_args=None):  # pragma: no cover
     parser.add_argument(
         "-n", "--nstrains", action="store",
         type=int,
-        help="number of strains", required=False)
+        help="number of strains; enter 0 for all", required=False)
     parser.add_argument(
         "--genus_species", dest="organism_name", action="store",
         help="'Genus species', in quotes", required=False)
@@ -159,6 +160,7 @@ def main():
     # check for required programs
     args = get_args()
     args.output = os.path.join(args.output, "")
+    args.genomes_dir = os.path.join(args.genomes_dir, "")
     for prog in [args.assembler, "mash", "wget"]:
         if shutil.which(prog) is None:
             print(prog + "not found in PATH! exiting...")
@@ -168,10 +170,10 @@ def main():
         sys.exit(1)
     else:
         os.makedirs(args.output)
-    #######################   Download close genomes  ###########################
-    if len(os.listdir(args.genomes_dir))  == 0:
+    #######################   Download close genomes  #########################
+    if len(glob.glob(args.genomes_dir + "*.fna"))  == 0:
         get_n_genomes.main(args)
-    #############################   Run Mini Assembly  #########################
+    #############################   Run Mini Assembly  ########################
     if args.assembly is None:
         # downsample
         cmds = []

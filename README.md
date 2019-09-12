@@ -18,9 +18,7 @@ plentyofbugs requires
 ```
 conda create pob skesa seqtk mash
 conda activate pob
-git clone https://github.com/nickp60/plentyofbug
-cd plentyofbugs
-python setup.py develop
+pip install plentyofbugs
 plentyofbugs  -h
 ```
 
@@ -40,23 +38,23 @@ plentyofbugs -g ./new_comparison_e_coli/ -n 5  --assembly ./test_data/contigs.fa
 ```
 
 # Running via container
-NOTE: To run the legacy version that used pyani, run a version olde than 0.87 with Docker or singularity -- it will save yourself a lot of trouble!
+NOTE: To run the legacy version that used pyani, run a version older than 0.87 with Docker or singularity -- it will save yourself a lot of trouble!
 
 ## Docker
 ```
-docker run --rm -t -v  ${PWD}:/data/ nickp60/plentyofbugs:0.92 -f /data/test_reads1.fq -o "Escherichia coli" -n 5 -e test -d /data/results/
+docker run --rm -t -v  ${PWD}:/data/ nickp60/plentyofbugs:0.97 -f /data/test_reads1.fq --genus_species "Escherichia coli" -n 5 -o /data/results/
 ```
 which is
 
 ```
-docker run --rm -t -v  <current directory>:/data/ nickp60/plentyofbugs:0.92  -f /data/<name of F reads file> -o "<bug of interest>" -n <max number of strains to compare with>  -e <name of experiment> -d /data/<name for output folder>/
+docker run --rm -t -v  <current directory>:/data/ nickp60/plentyofbugs:0.97  -f /data/<name of F reads file> --genus_species "<bug of interest>" -n <max number of strains to compare with>  -o /data/<name for output folder>/
 ```
 
 ## Singularity
 
 ```
 singularity pull docker://nickp60/plentyofbugs:0.92
-plentyofbugs:0.92.sing -f ./test_reads1.fq -o "Escherichia coli" -n 5 -e test -d ./results/
+plentyofbugs:0.92.sing -f ./test_reads1.fq --genus_species "Escherichia coli" -n 5  -o ./results/
 ```
 
 # Under the hood
@@ -66,5 +64,5 @@ plentyofbugs:0.92.sing -f ./test_reads1.fq -o "Escherichia coli" -n 5 -e test -d
 3. *optional* Subset number of complete genomes
 4. Download reference genomes
 5. Indexes/sketches genomes
-6. Calculate the distance/ANI of the mini assembly to the database of reference strains
+6. Calculate the Mash distance/ANI of the mini assembly to the database of reference strains
 7. Report the closest reference genome and the distance/ANI
