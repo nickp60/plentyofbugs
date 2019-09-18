@@ -17,7 +17,7 @@ import sys
 
 here = path.abspath(path.dirname(__file__))
 
-VERSIONFILE = "pob/_version.py"
+VERSIONFILE = "plentyofbugs/_version.py"
 verstrline = open(VERSIONFILE, "rt").read()
 VSRE = r"^__version__ = ['\"]([^'\"]*)['\"]"
 mo = re.search(VSRE, verstrline, re.M)
@@ -74,8 +74,8 @@ setup(
     # },
     entry_points={
        'console_scripts': [
-           'plentyofbugs=pob.plentyofbugs:main',
-           'get_n_genomes=pob.get_n_genomes:main',
+           'plentyofbugs=plentyofbugs.plentyofbugs:main',
+           'get_n_genomes=plentyofbugs.get_n_genomes:main',
        ],
     },
 )
