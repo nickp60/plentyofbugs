@@ -54,7 +54,7 @@ def test_make_cmds_from_decent_line():
                                                       org=org)
     cmds = gng.make_fetch_cmds(
         lines,
-        nstrains=1,
+        nstrains=0,
         thisseed=12345,
         genomes_dir="./",
         SHUFFLE=True)

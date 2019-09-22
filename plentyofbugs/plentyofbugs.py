@@ -81,6 +81,7 @@ def get_args(test_args=None):  # pragma: no cover
         type=float,
         default=.9999,
         required=False)
+    parser.add_argument('--version', action='version', version="%(prog)s " + _version.__version__)
     if test_args is None:
         args = parser.parse_args(sys.argv[1:])
     else:
@@ -156,11 +157,11 @@ def get_best_mash_result(mash_results):
 
 
 def main():
-    print("PlentyOfBugs version " + _version.__version__)
-    # check for required programs
     args = get_args()
+    print("PlentyOfBugs version " + _version.__version__)
     args.output = os.path.join(args.output, "")
     args.genomes_dir = os.path.join(args.genomes_dir, "")
+    # check for required programs
     for prog in [args.assembler, "mash", "wget"]:
         if shutil.which(prog) is None:
             print(prog + "not found in PATH! exiting...")
