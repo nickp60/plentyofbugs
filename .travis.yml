@@ -1,0 +1,29 @@
+language: python
+os:
+- linux
+dist: trusty
+sudo: required
+python:
+- '3.5'
+- '3.6'
+script:
+- python setup.py install
+- get_n_genomes -h
+- plentyofbugs --version
+- nosetests plentyofbugs/ -v
+
+
+jobs:
+  include:
+    - stage: deploy
+      script: echo "Deploying to PyPi"
+      deploy:
+        provider: pypi
+        user: NickWaters
+        password:
+          secure: "gg"
+        if: tag
+
+stages:
+  allow_failures:
+    - deploy
