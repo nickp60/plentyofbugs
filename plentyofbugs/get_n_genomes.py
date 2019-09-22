@@ -9,8 +9,7 @@ import sys
 import subprocess
 import argparse
 import shutil
-from random import shuffle
-
+from random import shuffle, seed
 def get_args():  # pragma nocover
     parser = argparse.ArgumentParser(
         description="Download a number of complete genomes for a given organism ",
@@ -27,9 +26,15 @@ def get_args():  # pragma nocover
         required=True)
     parser.add_argument(
         "-n", "--nstrains",
-        help="",
+        help="max number of strains to download; 0 (default) is all",
         type=int,
-        required=True)
+        default=0,
+        required=0)
+    parser.add_argument(
+        "--seed",
+        default=12345,
+        help="random seed",
+        type=int)
 
     parser.add_argument(
         "-p",
@@ -52,7 +57,8 @@ def parse_name_from_proks_line(line):
     return seq_name
 
 
-def make_fetch_cmds(org_lines, nstrains, genomes_dir, SHUFFLE=True):
+def make_fetch_cmds(org_lines, nstrains, genomes_dir, thisseed, SHUFFLE=True):
+    seed(thisseed)
     if SHUFFLE:
         shuffle(org_lines)
     # # now we shuffle the file, get the top n lines, and  split apart the
@@ -64,18 +70,26 @@ def make_fetch_cmds(org_lines, nstrains, genomes_dir, SHUFFLE=True):
     #    sys.stderr.write(line[8].split(":")[1].split(";")[0].split("/")[0])
     cmds = []
     for line in org_lines[0:nstrains]:
-        # print(line)
         shortname = parse_name_from_proks_line(line)
         name = os.path.basename(line[20])
+        if name == "-":
+            fix_index = 1
+            name = os.path.basename(line[20 + fix_index])
+        else:
+            fix_index = 0
+        # if bumping the index did fix the issue (usually tabs in metadata)
+        #  then we skip this one
+        if name == "-":
+            sys.stderr.write("Error parsing line for %s; skipping\n" % shortname)
+            continue
         full_path = os.path.join(
-            line[20],
+            line[20 + fix_index],
             name + "_genomic.fna.gz")
         cmd = "wget " + full_path + " -O " + os.path.join(
             genomes_dir, shortname + ".fna.gz")
         # no idea why some of the ftp paths are empty/ "-".
         # Take a look at  CP043199.1 CP043211 for examples
-        if name != "-":
-            cmds.append(cmd)
+        cmds.append(cmd)
     return cmds
 
 
@@ -107,6 +121,7 @@ def get_lines_of_interest_from_proks(path,  org):
 def main(args=None):
     if args is None:
         args = get_args()
+
     try:
         os.makedirs(args.genomes_dir)
     except:
@@ -120,6 +135,7 @@ def main(args=None):
     cmds = make_fetch_cmds(
         org_lines,
         nstrains=args.nstrains,
+        thisseed=args.seed,
         genomes_dir=args.genomes_dir,
         SHUFFLE=True)
     for i, cmd in enumerate(cmds):

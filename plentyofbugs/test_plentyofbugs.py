@@ -34,6 +34,35 @@ def test_get_lines():
     print(lines)
     assert "PRJNA315511" in  [x[2] for x in lines],  "PRJNA315511 not found!!"
 
+
+def test_make_cmds_from_bad_line():
+    org = "Bacteroides uniformis"
+    lines = gng.get_lines_of_interest_from_proks(path=proks_file,
+                                                      org=org)
+    cmds = gng.make_fetch_cmds(
+        lines,
+        nstrains=1,
+        thisseed=12345,
+        genomes_dir="./",
+        SHUFFLE=True)
+    exline = 'wget ftp://ftp.ncbi.nlm.nih.gov/genomes/all/GCA/006/742/345/GCA_006742345.1_ASM674234v1/GCA_006742345.1_ASM674234v1_genomic.fna.gz -O ./NZ_AP019724.1.fna.gz'
+    assert exline in  cmds,  "Error parsing lines"
+
+def test_make_cmds_from_decent_line():
+    org = "Escherichia coli"
+    lines = gng.get_lines_of_interest_from_proks(path=proks_file,
+                                                      org=org)
+    cmds = gng.make_fetch_cmds(
+        lines,
+        nstrains=1,
+        thisseed=12345,
+        genomes_dir="./",
+        SHUFFLE=True)
+    print(cmds)
+    exline = 'wget ftp://ftp.ncbi.nlm.nih.gov/genomes/all/GCA/003/971/215/GCA_003971215.1_ASM397121v1/GCA_003971215.1_ASM397121v1_genomic.fna.gz -O ./NZ_CP034589.1.fna.gz'
+    assert exline in  cmds,  "Error parsing lines"
+
+
 def test_get_names():
     org = "Escherichia coli"
     lines = gng.get_lines_of_interest_from_proks(path=proks_file,
