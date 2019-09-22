@@ -1,3 +1,6 @@
+[![Build Status](https://travis-ci.org/nickp60/plentyofbugs.svg?branch=master)](https://travis-ci.org/nickp60/plentyofbugs)[![DOI](https://zenodo.org/badge/157530896.svg)](https://zenodo.org/badge/latestdoi/157530896)
+
+
 # plentyofbugs
 ![plentyofbugslogo](https://github.com/nickp60/plentyofbugs/blob/master/icon/pob.png)
 
